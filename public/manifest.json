@@ -1,0 +1,27 @@
+{
+  "name": "LinkToQR.me - Advanced AI-Powered Web Utilities",
+  "short_name": "LinkToQR.me",
+  "description": "Privacy-first web toolkit for image processing, document handling, QR codes, smart text storage, PDF tools, OCR, and AI-powered utilities. Zero server uploads, 100% secure.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#00ffff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cropped_circle_image-gGFouolg7FZarHzOmt8WDIDyvT6wF1.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cropped_circle_image-gGFouolg7FZarHzOmt8WDIDyvT6wF1.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "productivity", "tools"],
+  "lang": "en",
+  "dir": "ltr"
+}
