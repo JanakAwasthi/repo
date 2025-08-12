@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -56,9 +57,20 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <img src="/favicon.ico" alt="LinkToQR.me" className="h-8 w-8" />
-            <span className="text-xl font-bold gradient-text">LinkToQR.me</span>
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 p-1">
+              <Image
+                src="/logo.png"
+                alt="LinkToQR.me Logo"
+                width={40}
+                height={40}
+                className="w-full h-full object-contain rounded-md"
+                priority
+              />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              LinkToQR.me
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -70,7 +82,7 @@ export function Header() {
                 onMouseEnter={() => setHoveredCategory(category)}
                 onMouseLeave={() => setHoveredCategory(null)}
               >
-                <Button variant="ghost" className="flex items-center space-x-1">
+                <Button variant="ghost" className="flex items-center space-x-1 hover:bg-muted/50">
                   {category === "Image Tools" && <ImageIcon className="h-4 w-4" />}
                   {category === "Document Tools" && <FileText className="h-4 w-4" />}
                   {category === "QR & Codes" && <QrCode className="h-4 w-4" />}
@@ -81,12 +93,12 @@ export function Header() {
 
                 {/* Dropdown Menu */}
                 {hoveredCategory === category && (
-                  <div className="absolute top-full left-0 mt-1 w-56 bg-background border rounded-lg shadow-lg py-2 z-50">
+                  <div className="absolute top-full left-0 mt-1 w-56 bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg py-2 z-50">
                     {tools.map((tool) => (
                       <Link
                         key={tool.href}
                         href={tool.href}
-                        className="block px-4 py-2 text-sm hover:bg-muted transition-colors"
+                        className="block px-4 py-2 text-sm hover:bg-muted/50 transition-colors rounded-md mx-1"
                         onClick={() => setHoveredCategory(null)}
                       >
                         {tool.name}
@@ -98,7 +110,9 @@ export function Header() {
             ))}
 
             <Link href="/how-to-use">
-              <Button variant="ghost">How to Use</Button>
+              <Button variant="ghost" className="hover:bg-muted/50">
+                How to Use
+              </Button>
             </Link>
           </nav>
 
@@ -115,17 +129,17 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden border-t py-4">
+          <div className="md:hidden border-t py-4 bg-background/95 backdrop-blur-sm">
             <div className="space-y-4">
               {Object.entries(toolCategories).map(([category, tools]) => (
                 <div key={category}>
-                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">{category}</h3>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2 px-2">{category}</h3>
                   <div className="space-y-1 ml-4">
                     {tools.map((tool) => (
                       <Link
                         key={tool.href}
                         href={tool.href}
-                        className="block py-1 text-sm hover:text-primary transition-colors"
+                        className="block py-2 px-2 text-sm hover:text-primary hover:bg-muted/50 rounded-md transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         {tool.name}
@@ -134,7 +148,11 @@ export function Header() {
                   </div>
                 </div>
               ))}
-              <Link href="/how-to-use" className="block py-2 text-sm font-medium" onClick={() => setIsMenuOpen(false)}>
+              <Link
+                href="/how-to-use"
+                className="block py-2 px-2 text-sm font-medium hover:text-primary hover:bg-muted/50 rounded-md transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 How to Use
               </Link>
             </div>

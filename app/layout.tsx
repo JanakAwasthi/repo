@@ -19,19 +19,36 @@ export const metadata: Metadata = {
   creator: "LinkToQR.me",
   publisher: "LinkToQR.me",
   robots: "index, follow",
+  icons: {
+    icon: [
+      { url: "/logo.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/logo.png",
+  },
   openGraph: {
     title: "LinkToQR.me - All-in-One Digital Toolkit",
     description: "Free online tools for image processing, QR codes, PDF conversion, and more",
     url: "https://linktoqr.me",
     siteName: "LinkToQR.me",
     type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "LinkToQR.me - Professional Online Toolkit",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "LinkToQR.me - All-in-One Digital Toolkit",
     description: "Free online tools for image processing, QR codes, PDF conversion, and more",
+    images: ["/logo.png"],
   },
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -42,11 +59,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="shortcut icon" href="/logo.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#000000" />
+        <meta name="theme-color" content="#3b82f6" />
         <link rel="manifest" href="/manifest.json" />
+        <meta name="google-adsense-account" content="ca-pub-6126558809611102" />
       </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
@@ -61,7 +80,7 @@ export default function RootLayout({
         {/* Google AdSense */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1234567890123456"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6126558809611102"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />

@@ -1,24 +1,36 @@
 {
-  "name": "LinkToQR.me - Advanced AI-Powered Web Utilities",
+  "name": "LinkToQR.me - All-in-One Web Toolkit",
   "short_name": "LinkToQR.me",
-  "description": "Privacy-first web toolkit for image processing, document handling, QR codes, smart text storage, PDF tools, OCR, and AI-powered utilities. Zero server uploads, 100% secure.",
+  "description": "Privacy-first web toolkit for image processing, document handling, QR codes, and more. Professional-grade tools for all your digital needs.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#00ffff",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cropped_circle_image-gGFouolg7FZarHzOmt8WDIDyvT6wF1.png",
+      "src": "/logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/cropped_circle_image-gGFouolg7FZarHzOmt8WDIDyvT6wF1.png",
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "apple-touch-icon"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "favicon"
     }
   ],
   "categories": ["utilities", "productivity", "tools"],
