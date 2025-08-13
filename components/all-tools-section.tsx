@@ -11,7 +11,6 @@ import {
   Crop,
   RefreshCw,
   Layers,
-  Camera,
   Scan,
   FilePlus,
   PenTool,
@@ -26,8 +25,9 @@ import {
   Key,
   Shield,
   History,
-  Zap,
-  Bot,
+  Video,
+  Hash,
+  MonitorSpeaker,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -39,6 +39,8 @@ const toolCategories = [
     tools: [
       { name: "Store Your Note", icon: Lock, href: "/tools/store-text" },
       { name: "Find Your Note", icon: Search, href: "/tools/find-text" },
+      { name: "Secure Text", icon: Shield, href: "/tools/secure-text" },
+      { name: "Text Extractor (OCR)", icon: Search, href: "/tools/text-extractor" },
     ],
   },
   {
@@ -50,8 +52,8 @@ const toolCategories = [
       { name: "Image Enhancer AI", icon: Sparkles, href: "/tools/image-enhancer" },
       { name: "Image Resizer", icon: Crop, href: "/tools/image-resizer" },
       { name: "Format Converter", icon: RefreshCw, href: "/tools/format-converter" },
-      { name: "Background Merger", icon: Layers, href: "/tools/background-merger" },
-      { name: "ID Photo Maker", icon: Camera, href: "/tools/id-photo-maker" },
+      { name: "Front & Background Merger", icon: Layers, href: "/tools/background-merger" },
+      { name: "Image Cropper", icon: Crop, href: "/tools/image-cropper" },
     ],
   },
   {
@@ -64,8 +66,6 @@ const toolCategories = [
       { name: "PDF Merger", icon: FilePlus, href: "/tools/pdf-merger" },
       { name: "Digital Signature", icon: PenTool, href: "/tools/digital-signature" },
       { name: "Watermark Tools", icon: Droplets, href: "/tools/watermark-tools" },
-      { name: "Text Extractor (OCR)", icon: Search, href: "/tools/text-extractor" },
-      { name: "AI Content Detector", icon: Bot, href: "/tools/ai-detector" },
     ],
   },
   {
@@ -80,15 +80,17 @@ const toolCategories = [
     ],
   },
   {
-    title: "Web Tools",
+    title: "Web & Media Tools",
     icon: Globe,
     color: "from-indigo-500 to-purple-600",
     tools: [
       { name: "Password Generator", icon: Key, href: "/tools/password-generator" },
       { name: "URL Shortener", icon: Globe, href: "/tools/url-shortener" },
+      { name: "Video Downloader", icon: Video, href: "/tools/video-downloader" },
       { name: "Color Palette", icon: Palette, href: "/tools/color-palette" },
       { name: "Base64 Encoder", icon: Shield, href: "/tools/base64-encoder" },
-      { name: "Hash Generator", icon: Zap, href: "/tools/hash-generator" },
+      { name: "Hash Generator", icon: Hash, href: "/tools/hash-generator" },
+      { name: "Audio Converter", icon: MonitorSpeaker, href: "/tools/audio-converter" },
       { name: "Save History", icon: History, href: "/tools/save-history" },
     ],
   },
@@ -97,7 +99,7 @@ const toolCategories = [
 export function AllToolsSection() {
   return (
     <section id="tools" className="py-20 px-4">
-      <div className="container mx-auto">
+      <div className="container mx-auto max-w-7xl">
         <div className="text-center mb-16">
           <h2 className="text-4xl lg:text-6xl font-bold mb-4">
             <span className="gradient-text">ALL TOOLS</span>

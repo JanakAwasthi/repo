@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -23,6 +23,8 @@ import {
   Archive,
   Eye,
   EyeOff,
+  Cloud,
+  Database,
 } from "lucide-react"
 
 interface StoredNote {
@@ -41,6 +43,70 @@ interface StoredNote {
 
 const categories = ["Personal", "Work", "Ideas", "Recipes", "Quotes", "Code", "Links", "Shopping", "Travel", "Other"]
 
+// Simulated cloud storage functions
+const cloudStorage = {
+  async saveNote(note: StoredNote): Promise<boolean> {
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Get existing notes from cloud simulation (localStorage with cloud prefix)
+      const cloudNotes = JSON.parse(localStorage.getItem("cloudNotes") || "[]")
+
+      // Check if note with same user credentials exists
+      const existingIndex = cloudNotes.findIndex(
+        (n: StoredNote) => n.userName === note.userName && n.userPassword === note.userPassword && n.id === note.id,
+      )
+
+      if (existingIndex >= 0) {
+        cloudNotes[existingIndex] = note
+      } else {
+        cloudNotes.push(note)
+      }
+
+      localStorage.setItem("cloudNotes", JSON.stringify(cloudNotes))
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+
+  async findNotes(userName: string, password: string): Promise<StoredNote[]> {
+    try {
+      // Simulate API call delay
+      await new Promise((resolve) => setTimeout(resolve, 800))
+
+      const cloudNotes = JSON.parse(localStorage.getItem("cloudNotes") || "[]")
+
+      return cloudNotes
+        .filter((note: any) => note.userName === userName && note.userPassword === password)
+        .map((note: any) => ({
+          ...note,
+          createdAt: new Date(note.createdAt),
+          updatedAt: new Date(note.updatedAt),
+        }))
+    } catch (error) {
+      return []
+    }
+  },
+
+  async deleteNote(noteId: string, userName: string, password: string): Promise<boolean> {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      const cloudNotes = JSON.parse(localStorage.getItem("cloudNotes") || "[]")
+      const filteredNotes = cloudNotes.filter(
+        (note: any) => !(note.id === noteId && note.userName === userName && note.userPassword === password),
+      )
+
+      localStorage.setItem("cloudNotes", JSON.stringify(filteredNotes))
+      return true
+    } catch (error) {
+      return false
+    }
+  },
+}
+
 export default function StoreTextPage() {
   const [notes, setNotes] = useState<StoredNote[]>([])
   const [currentNote, setCurrentNote] = useState<StoredNote | null>(null)
@@ -55,35 +121,41 @@ export default function StoreTextPage() {
   const [filterCategory, setFilterCategory] = useState("All")
   const [showArchived, setShowArchived] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSyncing, setIsSyncing] = useState(false)
+
+  // Find notes form
+  const [findUserName, setFindUserName] = useState("")
+  const [findPassword, setFindPassword] = useState("")
+  const [showFindPassword, setShowFindPassword] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+
   const { toast } = useToast()
 
-  // Load notes from localStorage on component mount
-  useEffect(() => {
-    const saved = localStorage.getItem("storedNotes")
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        setNotes(
-          parsed.map((note: any) => ({
-            ...note,
-            createdAt: new Date(note.createdAt),
-            updatedAt: new Date(note.updatedAt),
-          })),
-        )
-      } catch (error) {
-        console.error("Failed to load notes:", error)
+  const saveNoteToCloud = async (note: StoredNote) => {
+    setIsSyncing(true)
+    try {
+      const success = await cloudStorage.saveNote(note)
+      if (success) {
+        toast({
+          title: "Synced to Cloud ☁️",
+          description: "Your note is now accessible from any device",
+        })
+      } else {
+        throw new Error("Sync failed")
       }
+    } catch (error) {
+      toast({
+        title: "Sync Failed",
+        description: "Note saved locally but couldn't sync to cloud",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSyncing(false)
     }
-  }, [])
+  }
 
-  // Save notes to localStorage whenever notes change
-  useEffect(() => {
-    if (notes.length > 0) {
-      localStorage.setItem("storedNotes", JSON.stringify(notes))
-    }
-  }, [notes])
-
-  const saveNote = () => {
+  const saveNote = async () => {
     if (!title.trim() || !content.trim() || !userName.trim() || !userPassword.trim()) {
       toast({
         title: "Missing Information",
@@ -93,72 +165,130 @@ export default function StoreTextPage() {
       return
     }
 
+    setIsLoading(true)
+
     const tagArray = tags
       .split(",")
       .map((tag) => tag.trim())
       .filter(Boolean)
 
-    if (isEditing && currentNote) {
-      // Update existing note
-      const updatedNote = {
-        ...currentNote,
-        title: title.trim(),
-        content: content.trim(),
-        category,
-        tags: tagArray,
-        userName: userName.trim(),
-        userPassword: userPassword.trim(),
-        updatedAt: new Date(),
+    try {
+      if (isEditing && currentNote) {
+        // Update existing note
+        const updatedNote = {
+          ...currentNote,
+          title: title.trim(),
+          content: content.trim(),
+          category,
+          tags: tagArray,
+          userName: userName.trim(),
+          userPassword: userPassword.trim(),
+          updatedAt: new Date(),
+        }
+
+        setNotes((prev) => prev.map((note) => (note.id === currentNote.id ? updatedNote : note)))
+        setCurrentNote(updatedNote)
+
+        // Save to cloud
+        await saveNoteToCloud(updatedNote)
+
+        toast({
+          title: "Note Updated",
+          description: "Your note has been successfully updated and synced",
+        })
+      } else {
+        // Create new note
+        const newNote: StoredNote = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          title: title.trim(),
+          content: content.trim(),
+          category,
+          tags: tagArray,
+          userName: userName.trim(),
+          userPassword: userPassword.trim(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isFavorite: false,
+          isArchived: false,
+        }
+
+        setNotes((prev) => [newNote, ...prev])
+        setCurrentNote(newNote)
+
+        // Save to cloud
+        await saveNoteToCloud(newNote)
+
+        toast({
+          title: "Note Saved & Synced! 🎉",
+          description: "Your note is now accessible from any device with your credentials",
+        })
       }
 
-      setNotes((prev) => prev.map((note) => (note.id === currentNote.id ? updatedNote : note)))
-      setCurrentNote(updatedNote)
-
-      toast({
-        title: "Note Updated",
-        description: "Your note has been successfully updated",
-      })
-    } else {
-      // Create new note
-      const newNote: StoredNote = {
+      // Save to history
+      const historyItem = {
         id: Date.now().toString(),
-        title: title.trim(),
-        content: content.trim(),
-        category,
-        tags: tagArray,
-        userName: userName.trim(),
-        userPassword: userPassword.trim(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        isFavorite: false,
-        isArchived: false,
+        type: "store-text",
+        timestamp: new Date().toISOString(),
+        details: {
+          title: title.trim(),
+          category,
+          tags: tagArray,
+          userName: userName.trim(),
+        },
       }
 
-      setNotes((prev) => [newNote, ...prev])
-      setCurrentNote(newNote)
-
+      const history = JSON.parse(localStorage.getItem("toolHistory") || "[]")
+      history.unshift(historyItem)
+      localStorage.setItem("toolHistory", JSON.stringify(history.slice(0, 100)))
+    } catch (error) {
       toast({
-        title: "Note Saved",
-        description: "Your note has been successfully saved with your credentials",
+        title: "Save Failed",
+        description: "Failed to save note. Please try again.",
+        variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const findMyNotes = async () => {
+    if (!findUserName.trim() || !findPassword.trim()) {
+      toast({
+        title: "Missing Credentials",
+        description: "Please enter both username and password to find your notes",
+        variant: "destructive",
+      })
+      return
     }
 
-    // Save to history
-    const historyItem = {
-      id: Date.now().toString(),
-      type: "store-text",
-      timestamp: new Date().toISOString(),
-      details: {
-        title: title.trim(),
-        category,
-        tags: tagArray,
-        userName: userName.trim(),
-      },
-    }
+    setIsSearching(true)
+    try {
+      const foundNotes = await cloudStorage.findNotes(findUserName.trim(), findPassword.trim())
 
-    const history = JSON.parse(localStorage.getItem("toolHistory") || "[]")
-    history.unshift(historyItem)
-    localStorage.setItem("toolHistory", JSON.stringify(history.slice(0, 100)))
+      if (foundNotes.length > 0) {
+        setNotes(foundNotes)
+        setUserName(findUserName.trim())
+        setUserPassword(findPassword.trim())
+        toast({
+          title: "Notes Found! 🎉",
+          description: `Found ${foundNotes.length} note(s) associated with your account`,
+        })
+      } else {
+        toast({
+          title: "No Notes Found",
+          description: "No notes found with these credentials. Check your username and password.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Search Failed",
+        description: "Failed to search for notes. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSearching(false)
+    }
   }
 
   const editNote = (note: StoredNote) => {
@@ -172,24 +302,53 @@ export default function StoreTextPage() {
     setIsEditing(true)
   }
 
-  const deleteNote = (noteId: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== noteId))
-    if (currentNote?.id === noteId) {
-      clearForm()
+  const deleteNote = async (noteId: string) => {
+    const noteToDelete = notes.find((n) => n.id === noteId)
+    if (!noteToDelete) return
+
+    try {
+      const success = await cloudStorage.deleteNote(noteId, noteToDelete.userName, noteToDelete.userPassword)
+
+      setNotes((prev) => prev.filter((note) => note.id !== noteId))
+      if (currentNote?.id === noteId) {
+        clearForm()
+      }
+
+      toast({
+        title: success ? "Note Deleted & Synced" : "Note Deleted Locally",
+        description: success ? "Note removed from all devices" : "Note deleted locally but may still exist on cloud",
+      })
+    } catch (error) {
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete note. Please try again.",
+        variant: "destructive",
+      })
     }
-
-    toast({
-      title: "Note Deleted",
-      description: "Note has been permanently deleted",
-    })
   }
 
-  const toggleFavorite = (noteId: string) => {
-    setNotes((prev) => prev.map((note) => (note.id === noteId ? { ...note, isFavorite: !note.isFavorite } : note)))
+  const toggleFavorite = async (noteId: string) => {
+    const updatedNotes = notes.map((note) =>
+      note.id === noteId ? { ...note, isFavorite: !note.isFavorite, updatedAt: new Date() } : note,
+    )
+    setNotes(updatedNotes)
+
+    const updatedNote = updatedNotes.find((n) => n.id === noteId)
+    if (updatedNote) {
+      await saveNoteToCloud(updatedNote)
+    }
   }
 
-  const toggleArchive = (noteId: string) => {
-    setNotes((prev) => prev.map((note) => (note.id === noteId ? { ...note, isArchived: !note.isArchived } : note)))
+  const toggleArchive = async (noteId: string) => {
+    const updatedNotes = notes.map((note) =>
+      note.id === noteId ? { ...note, isArchived: !note.isArchived, updatedAt: new Date() } : note,
+    )
+    setNotes(updatedNotes)
+
+    const updatedNote = updatedNotes.find((n) => n.id === noteId)
+    if (updatedNote) {
+      await saveNoteToCloud(updatedNote)
+    }
   }
 
   const clearForm = () => {
@@ -198,8 +357,6 @@ export default function StoreTextPage() {
     setContent("")
     setCategory("Personal")
     setTags("")
-    setUserName("")
-    setUserPassword("")
     setIsEditing(false)
   }
 
@@ -269,27 +426,82 @@ export default function StoreTextPage() {
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">
             <div className="p-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full">
-              <Save className="h-12 w-12 text-white" />
+              <Cloud className="h-12 w-12 text-white" />
             </div>
           </div>
           <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-            Store Your Notes
+            Cloud Notes Storage
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Save, organize, and manage your text notes with name and password protection
+            Save your notes to the cloud and access them from any device with your credentials
           </p>
         </div>
 
         <AdBanner slot="9131891151" />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar - Notes List */}
+          {/* Sidebar - Find Notes & Navigation */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Find My Notes */}
+            <Card className="border-2 border-blue-200 dark:border-blue-800">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-blue-500" />
+                  Find My Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Your Name</label>
+                  <Input
+                    placeholder="Enter your name"
+                    value={findUserName}
+                    onChange={(e) => setFindUserName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Password</label>
+                  <div className="relative">
+                    <Input
+                      type={showFindPassword ? "text" : "password"}
+                      placeholder="Enter password"
+                      value={findPassword}
+                      onChange={(e) => setFindPassword(e.target.value)}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowFindPassword(!showFindPassword)}
+                    >
+                      {showFindPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+                <Button onClick={findMyNotes} disabled={isSearching} className="w-full bg-blue-600 hover:bg-blue-700">
+                  {isSearching ? (
+                    <>
+                      <Search className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Find My Notes
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Current Notes */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-green-500" />
-                  My Notes ({notes.length})
+                  My Notes ({notes.length}){isSyncing && <Cloud className="h-4 w-4 animate-pulse text-blue-500" />}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -359,7 +571,10 @@ export default function StoreTextPage() {
             <Card className="border-2 border-green-200 dark:border-green-800">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
-                  <span>{isEditing ? "Edit Note" : "Create New Note"}</span>
+                  <span className="flex items-center gap-2">
+                    {isEditing ? "Edit Note" : "Create New Note"}
+                    {isSyncing && <Cloud className="h-5 w-5 animate-pulse text-blue-500" />}
+                  </span>
                   {isEditing && (
                     <Button variant="outline" onClick={clearForm}>
                       Cancel Edit
@@ -448,10 +663,20 @@ export default function StoreTextPage() {
                 {/* Save Button */}
                 <Button
                   onClick={saveNote}
+                  disabled={isLoading || isSyncing}
                   className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                 >
-                  <Save className="h-4 w-4 mr-2" />
-                  {isEditing ? "Update Note" : "Save Note"}
+                  {isLoading || isSyncing ? (
+                    <>
+                      <Cloud className="h-4 w-4 mr-2 animate-pulse" />
+                      {isLoading ? "Saving..." : "Syncing..."}
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      {isEditing ? "Update & Sync Note" : "Save & Sync Note"}
+                    </>
+                  )}
                 </Button>
 
                 {/* Stats */}
@@ -584,14 +809,30 @@ export default function StoreTextPage() {
               </div>
             )}
 
-            {filteredNotes.length === 0 && (
+            {filteredNotes.length === 0 && notes.length === 0 && (
               <Card>
                 <CardContent className="text-center py-12">
-                  <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <Cloud className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <h3 className="text-lg font-semibold mb-2">No notes found</h3>
-                  <p className="text-muted-foreground">
-                    {searchTerm ? "Try adjusting your search terms" : "Create your first note to get started"}
+                  <p className="text-muted-foreground mb-4">
+                    Create your first note or find existing notes using your credentials
                   </p>
+                  <div className="flex gap-2 justify-center">
+                    <Button onClick={clearForm} variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Note
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {filteredNotes.length === 0 && notes.length > 0 && (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No matching notes</h3>
+                  <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
                 </CardContent>
               </Card>
             )}
