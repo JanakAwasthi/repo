@@ -7,11 +7,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <HeroSection />
-      <AdBanner slot="9131891151" />
+      {/* Updated ad slots to use proper slot IDs */}
+      <AdBanner slot="1234567890" />
       <FeaturedTools />
-      <AdBanner slot="9131891151" />
+      <AdBanner slot="2345678901" />
       <AllToolsSection />
-      <AdBanner slot="9131891151" />
+      <AdBanner slot="3456789012" />
     </div>
   )
 }

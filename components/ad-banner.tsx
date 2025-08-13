@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-export function AdBanner({ slot = "auto", format = "auto", responsive = true, className = "" }: AdBannerProps) {
+export function AdBanner({ slot = "1234567890", format = "auto", responsive = true, className = "" }: AdBannerProps) {
   useEffect(() => {
     try {
       if (typeof window !== "undefined" && window.adsbygoogle) {
@@ -31,7 +31,7 @@ export function AdBanner({ slot = "auto", format = "auto", responsive = true, cl
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}
-        data-ad-client="ca-pub-1234567890123456"
+        data-ad-client="ca-pub-6126558809611102"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive={responsive.toString()}
@@ -41,13 +41,13 @@ export function AdBanner({ slot = "auto", format = "auto", responsive = true, cl
 }
 
 export function SidebarAd() {
-  return <AdBanner slot="9131891151" format="rectangle" className="my-4" />
+  return <AdBanner slot="1234567890" format="rectangle" className="my-4" />
 }
 
 export function InlineAd() {
-  return <AdBanner slot="9131891151" format="auto" className="my-6" />
+  return <AdBanner slot="2345678901" format="auto" className="my-6" />
 }
 
 export function FooterAd() {
-  return <AdBanner slot="9131891151" format="horizontal" className="mt-8" />
+  return <AdBanner slot="3456789012" format="horizontal" className="mt-8" />
 }
